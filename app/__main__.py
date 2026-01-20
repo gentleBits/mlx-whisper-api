@@ -1,12 +1,15 @@
 """Command-line interface for MLX Whisper API.
 
-Run the server with: python -m app [OPTIONS]
+Run the server with: mlx-whisper-api [OPTIONS]
 
 Examples:
-    python -m app
-    python -m app --port 8080
-    python -m app --host 127.0.0.1 --port 8080 --reload
-    python -m app --log-level DEBUG
+    mlx-whisper-api
+    mlx-whisper-api --port 8080
+    mlx-whisper-api --host 127.0.0.1 --port 8080 --reload
+    mlx-whisper-api --log-level DEBUG
+
+Alternative (without installation):
+    python -m app [OPTIONS]
 """
 
 import argparse
@@ -23,17 +26,17 @@ def get_version() -> str:
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser with all CLI options."""
     parser = argparse.ArgumentParser(
-        prog="python -m app",
+        prog="mlx-whisper-api",
         description="MLX Whisper API - REST API for audio-to-text transcription "
                     "using MLX-optimized Whisper models on Apple Silicon.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python -m app                          Start with defaults (0.0.0.0:8000)
-  python -m app --port 8080              Start on port 8080
-  python -m app --host 127.0.0.1         Bind to localhost only
-  python -m app --reload                 Enable auto-reload for development
-  python -m app --workers 4              Run with 4 worker processes
+  mlx-whisper-api                          Start with defaults (0.0.0.0:8000)
+  mlx-whisper-api --port 8080              Start on port 8080
+  mlx-whisper-api --host 127.0.0.1         Bind to localhost only
+  mlx-whisper-api --reload                 Enable auto-reload for development
+  mlx-whisper-api --workers 4              Run with 4 worker processes
 
 Environment variables:
   HOST              Server bind address (default: 0.0.0.0)
