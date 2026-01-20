@@ -40,6 +40,20 @@ jobs:
           fi
           echo "Health check passed"
 
+      - name: Test transcription with tiny model
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST http://127.0.0.1:8080/transcribe \
+            -F "file=@tests/fixtures/audio/short.wav" \
+            -F "model=mlx-community/whisper-tiny-mlx")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          if [ "$http_code" != "200" ]; then
+            echo "Transcription failed with status: $http_code"
+            echo "Response: $body"
+            exit 1
+          fi
+          echo "Transcription succeeded: $body"
+
       - name: Shutdown server
         if: always()
         run: |
@@ -52,6 +66,9 @@ jobs:
     runs-on: macos-14
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
+      - name: Checkout code (for test audio files)
+        uses: actions/checkout@v4
+
       - name: Tap gentleBits/mlx-whisper-api
         run: brew tap gentleBits/mlx-whisper-api
 
@@ -81,6 +98,20 @@ jobs:
             exit 1
           fi
           echo "Health check passed"
+
+      - name: Test transcription with tiny model
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST http://127.0.0.1:8080/transcribe \
+            -F "file=@tests/fixtures/audio/short.wav" \
+            -F "model=mlx-community/whisper-tiny-mlx")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          if [ "$http_code" != "200" ]; then
+            echo "Transcription failed with status: $http_code"
+            echo "Response: $body"
+            exit 1
+          fi
+          echo "Transcription succeeded: $body"
 
       - name: Shutdown server
         if: always()
