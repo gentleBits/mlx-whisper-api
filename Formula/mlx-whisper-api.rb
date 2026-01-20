@@ -31,30 +31,29 @@ class MlxWhisperApi < Formula
   # MLX requires Apple Silicon
   depends_on arch: :arm64
   depends_on :macos
+  depends_on "mlx"
   depends_on "python@3.12"
 
   # Core dependencies
   # Generate these with: poet mlx-whisper-api
   # Or manually add each dependency
 
-  resource "mlx" do
-    url "https://files.pythonhosted.org/packages/source/m/mlx/mlx-0.21.0.tar.gz"
-    sha256 "REPLACE_WITH_ACTUAL_SHA256"
-  end
+  # Note: mlx is installed via Homebrew core dependency, not as a Python resource
+  # because the PyPI version is outdated and mlx builds require special tooling
 
   resource "mlx-whisper" do
-    url "https://files.pythonhosted.org/packages/source/m/mlx-whisper/mlx_whisper-0.4.2.tar.gz"
-    sha256 "REPLACE_WITH_ACTUAL_SHA256"
+    url "https://files.pythonhosted.org/packages/4b/be/da654e46741fb07aafbfe44b8e8227f890a6874f17dd068db310d75d491b/mlx_whisper-0.4.2.tar.gz"
+    sha256 "5487d967245291fd45d5f11c98a69da1130b9304d0767663412d56fffd71e088"
   end
 
   resource "numpy" do
-    url "https://files.pythonhosted.org/packages/source/n/numpy/numpy-2.2.2.tar.gz"
+    url "https://files.pythonhosted.org/packages/ec/d0/c12ddfd3a02274be06ffc71f3efc6d0e457b0409c4481596881e748cb264/numpy-2.2.2.tar.gz"
     sha256 "ed6906f61834d687738d25988ae117683705636936cc605be0bb208b23df4d8f"
   end
 
   resource "fastapi" do
-    url "https://files.pythonhosted.org/packages/source/f/fastapi/fastapi-0.115.7.tar.gz"
-    sha256 "0f106da6c01d88a6786b3248fb3404179a2907fc98a3a12d652ccfe46e0f6dc7"
+    url "https://files.pythonhosted.org/packages/a2/f5/3f921e59f189e513adb9aef826e2841672d50a399fead4e69afdeb808ff4/fastapi-0.115.7.tar.gz"
+    sha256 "0f106da6c01d88a6786b3248fb4d7a940d071f6f488488898ad5d354b25ed015"
   end
 
   resource "uvicorn" do
@@ -68,7 +67,7 @@ class MlxWhisperApi < Formula
   end
 
   resource "pydantic" do
-    url "https://files.pythonhosted.org/packages/source/p/pydantic/pydantic-2.10.5.tar.gz"
+    url "https://files.pythonhosted.org/packages/6a/c7/ca334c2ef6f2e046b1144fe4bb2a5da8a4c574e7f2ebf7e16b34a6a2fa92/pydantic-2.10.5.tar.gz"
     sha256 "278b38dbbaec562011d659ee05f63346951b3a248a6f3642e1bc68894ea2b4ff"
   end
 
@@ -78,13 +77,13 @@ class MlxWhisperApi < Formula
   end
 
   resource "python-multipart" do
-    url "https://files.pythonhosted.org/packages/source/p/python-multipart/python_multipart-0.0.20.tar.gz"
-    sha256 "8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9571"
+    url "https://files.pythonhosted.org/packages/f3/87/f44d7c9f274c7ee665a29b885ec97089ec5dc034c7f3fafa03da9e39a09e/python_multipart-0.0.20.tar.gz"
+    sha256 "8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13"
   end
 
   resource "huggingface-hub" do
-    url "https://files.pythonhosted.org/packages/source/h/huggingface-hub/huggingface_hub-0.27.1.tar.gz"
-    sha256 "c004463ca870283909d715d20f066ebd6434799f3b7c9c8a710ade7effd87c20"
+    url "https://files.pythonhosted.org/packages/e1/d2/d6976de7542792fc077b498d64af64882b6d8bb40679284ec0bff77d5929/huggingface_hub-0.27.1.tar.gz"
+    sha256 "c004463ca870283909d715d20f066ebd6968c2207dae9393fdffb3c1d4d8f98b"
   end
 
   resource "click" do
@@ -98,8 +97,8 @@ class MlxWhisperApi < Formula
   end
 
   resource "httptools" do
-    url "https://files.pythonhosted.org/packages/source/h/httptools/httptools-0.6.4.tar.gz"
-    sha256 "4e93eee4f0f8ff98299efdb35b8a4703a7a2d326498b5bd37bb36ef81377864f"
+    url "https://files.pythonhosted.org/packages/a7/9a/ce5e1f7e131522e6d3426e8e7a490b3a01f39a6696602e1c4f33f9e94277/httptools-0.6.4.tar.gz"
+    sha256 "4e93eee4add6493b59a5c514da98c939b244fce4a0d8879cd3f466562f4b7d5c"
   end
 
   resource "typing-extensions" do
@@ -113,8 +112,8 @@ class MlxWhisperApi < Formula
   end
 
   resource "anyio" do
-    url "https://files.pythonhosted.org/packages/source/a/anyio/anyio-4.8.0.tar.gz"
-    sha256 "1d9fe889df5212298c0c0723fa20479d1b94883a2df44f529e519fecdc43def9"
+    url "https://files.pythonhosted.org/packages/a3/73/199a98fc2dae33535d6b8e8e6ec01f8c1d76c9adb096c6b7d64823038cde/anyio-4.8.0.tar.gz"
+    sha256 "1d9fe889df5212298c0c0723fa20479d1b94883a2df44bd3897aa91083316f7a"
   end
 
   resource "sniffio" do
@@ -138,7 +137,7 @@ class MlxWhisperApi < Formula
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/source/u/urllib3/urllib3-2.3.0.tar.gz"
+    url "https://files.pythonhosted.org/packages/aa/63/e53da845320b757bf29ef6a9062f5c669fe997973f966045cb019c3f4b66/urllib3-2.3.0.tar.gz"
     sha256 "f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"
   end
 
@@ -148,13 +147,13 @@ class MlxWhisperApi < Formula
   end
 
   resource "filelock" do
-    url "https://files.pythonhosted.org/packages/source/f/filelock/filelock-3.16.1.tar.gz"
+    url "https://files.pythonhosted.org/packages/9d/db/3ef5bb276dae18d6ec2124224403d1d67bccdbefc17af4cc8f553e341ab1/filelock-3.16.1.tar.gz"
     sha256 "c249fbfcd5db47e5e2d6d62198e565475ee65e4831e2561c8e313fa7eb961435"
   end
 
   resource "fsspec" do
-    url "https://files.pythonhosted.org/packages/source/f/fsspec/fsspec-2024.12.0.tar.gz"
-    sha256 "670700c977ed2fb51e0f9f1c40343a2426ad92b28da8837482fbde3da2f82f31"
+    url "https://files.pythonhosted.org/packages/ee/11/de70dee31455c546fbc88301971ec03c328f3d1138cfba14263f651e9551/fsspec-2024.12.0.tar.gz"
+    sha256 "670700c977ed2fb51e0d9f9253177ed20cbde4a3e5c0283cc5385b5870c8533f"
   end
 
   resource "pyyaml" do
@@ -163,8 +162,8 @@ class MlxWhisperApi < Formula
   end
 
   resource "tqdm" do
-    url "https://files.pythonhosted.org/packages/source/t/tqdm/tqdm-4.67.1.tar.gz"
-    sha256 "f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959b7f74571d160e2d0f7f7a5"
+    url "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz"
+    sha256 "f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2"
   end
 
   resource "packaging" do
@@ -173,8 +172,8 @@ class MlxWhisperApi < Formula
   end
 
   resource "uvloop" do
-    url "https://files.pythonhosted.org/packages/source/u/uvloop/uvloop-0.21.0.tar.gz"
-    sha256 "3bf12b0fda68447806a7ad847bfa591613177275f35b6724b1ee573faa3704e3"
+    url "https://files.pythonhosted.org/packages/af/c0/854216d09d33c543f12a44b393c402e89a920b1a0a7dc634c42de91b9cf6/uvloop-0.21.0.tar.gz"
+    sha256 "3bf12b0fda68447806a7ad847bfa591613177275d35b6724b1ee573faa3704e3"
   end
 
   resource "watchfiles" do
@@ -212,7 +211,7 @@ class MlxWhisperApi < Formula
         mlx-whisper-api --help
 
       API documentation will be available at:
-        http://localhost:8000/docs
+        http://localhost:1738/docs
 
       Note: The first transcription may take longer as the Whisper model
       needs to be downloaded from HuggingFace Hub.

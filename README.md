@@ -17,9 +17,18 @@ REST API for audio-to-text transcription using MLX-optimized Whisper models on A
 
 ## Installation
 
+### Via Homebrew (Recommended)
+
+```bash
+brew tap gentleBits/mlx-whisper-api
+brew install mlx-whisper-api
+```
+
+### From Source
+
 1. Clone the repository:
    ```bash
-   git clone https://github.com/computerstimulation/mlx-whisper-api.git
+   git clone https://github.com/gentleBits/mlx-whisper-api.git
    cd mlx-whisper-api
    ```
 
@@ -61,14 +70,14 @@ View all CLI options:
 python -m app --help
 ```
 
-The API will be available at `http://localhost:8000`. Interactive documentation is available at `http://localhost:8000/docs`.
+The API will be available at `http://localhost:1738`. Interactive documentation is available at `http://localhost:1738/docs`.
 
 ## API Endpoints
 
 ### Health Check
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:1738/health
 ```
 
 Response:
@@ -81,13 +90,13 @@ Response:
 Transcribe an audio file to text.
 
 ```bash
-curl -X POST http://localhost:8000/transcribe \
+curl -X POST http://localhost:1738/transcribe \
   -F "file=@audio.wav"
 ```
 
 With optional parameters:
 ```bash
-curl -X POST http://localhost:8000/transcribe \
+curl -X POST http://localhost:1738/transcribe \
   -F "file=@meeting.mp3" \
   -F "model=mlx-community/whisper-large-v3-mlx" \
   -F "language=en" \
@@ -114,7 +123,7 @@ curl -X POST http://localhost:8000/transcribe \
 List all supported models and their download status.
 
 ```bash
-curl http://localhost:8000/models
+curl http://localhost:1738/models
 ```
 
 Response:
@@ -150,7 +159,7 @@ Response:
 Get detailed status of a specific model.
 
 ```bash
-curl http://localhost:8000/models/mlx-community%2Fwhisper-large-v3-mlx/status
+curl http://localhost:1738/models/mlx-community%2Fwhisper-large-v3-mlx/status
 ```
 
 Response (downloaded):
@@ -179,7 +188,7 @@ Response (downloading):
 Initiate download of a model (non-blocking).
 
 ```bash
-curl -X POST http://localhost:8000/models/mlx-community%2Fwhisper-tiny-mlx/download
+curl -X POST http://localhost:1738/models/mlx-community%2Fwhisper-tiny-mlx/download
 ```
 
 Response:
@@ -196,7 +205,7 @@ Response:
 Remove a downloaded model from local cache.
 
 ```bash
-curl -X DELETE http://localhost:8000/models/mlx-community%2Fwhisper-tiny-mlx
+curl -X DELETE http://localhost:1738/models/mlx-community%2Fwhisper-tiny-mlx
 ```
 
 Response:
@@ -214,7 +223,7 @@ Response:
 | Argument | Short | Default | Description |
 |----------|-------|---------|-------------|
 | `--host` | | `0.0.0.0` | Server bind address |
-| `--port` | `-p` | `8000` | Server port |
+| `--port` | `-p` | `1738` | Server port |
 | `--reload` | `-r` | off | Enable auto-reload for development |
 | `--workers` | `-w` | `1` | Number of worker processes |
 | `--log-level` | `-l` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
@@ -227,7 +236,7 @@ Environment variables are used as defaults when CLI arguments are not provided.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `HOST` | `0.0.0.0` | Server bind address |
-| `PORT` | `8000` | Server port |
+| `PORT` | `1738` | Server port |
 | `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
 | `DEFAULT_MODEL` | `mlx-community/whisper-large-v3-mlx` | Default model for transcription |
 | `MAX_AUDIO_SIZE_MB` | `100` | Maximum upload file size in MB |
@@ -237,27 +246,27 @@ Environment variables are used as defaults when CLI arguments are not provided.
 
 ### Basic Transcription
 ```bash
-curl -X POST http://localhost:8000/transcribe \
+curl -X POST http://localhost:1738/transcribe \
   -F "file=@recording.wav"
 ```
 
 ### Transcription with Language Hint
 ```bash
-curl -X POST http://localhost:8000/transcribe \
+curl -X POST http://localhost:1738/transcribe \
   -F "file=@french_audio.mp3" \
   -F "language=fr"
 ```
 
 ### Transcription with Context Prompt
 ```bash
-curl -X POST http://localhost:8000/transcribe \
+curl -X POST http://localhost:1738/transcribe \
   -F "file=@medical_recording.m4a" \
   -F "prompt=Medical consultation about diabetes treatment. Patient name: John Smith."
 ```
 
 ### Using a Smaller Model for Speed
 ```bash
-curl -X POST http://localhost:8000/transcribe \
+curl -X POST http://localhost:1738/transcribe \
   -F "file=@quick_note.wav" \
   -F "model=mlx-community/whisper-tiny-mlx"
 ```
