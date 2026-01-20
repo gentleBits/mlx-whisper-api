@@ -32,7 +32,7 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  mlx-whisper-api                          Start with defaults (0.0.0.0:8000)
+  mlx-whisper-api                          Start with defaults (0.0.0.0:1738)
   mlx-whisper-api --port 8080              Start on port 8080
   mlx-whisper-api --host 127.0.0.1         Bind to localhost only
   mlx-whisper-api --reload                 Enable auto-reload for development
@@ -40,7 +40,7 @@ Examples:
 
 Environment variables:
   HOST              Server bind address (default: 0.0.0.0)
-  PORT              Server port (default: 8000)
+  PORT              Server port (default: 1738)
   LOG_LEVEL         Logging level (default: INFO)
   DEFAULT_MODEL     Default Whisper model
   MAX_AUDIO_SIZE_MB Maximum upload size in MB (default: 100)
@@ -57,7 +57,7 @@ Environment variables:
     parser.add_argument(
         "--port", "-p",
         type=int,
-        default=int(os.getenv("PORT", "8000")),
+        default=int(os.getenv("PORT", "1738")),
         help="Port to bind the server to (default: %(default)s)",
     )
     parser.add_argument(

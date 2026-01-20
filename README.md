@@ -24,7 +24,26 @@ brew tap gentleBits/mlx-whisper-api
 brew install mlx-whisper-api
 ```
 
-### From Source
+### Via pip
+
+Install directly from GitHub:
+```bash
+pip install git+https://github.com/gentleBits/mlx-whisper-api.git
+```
+
+Or clone and install locally:
+```bash
+git clone https://github.com/gentleBits/mlx-whisper-api.git
+cd mlx-whisper-api
+pip install .
+```
+
+After installation, start the server with:
+```bash
+mlx-whisper-api
+```
+
+### From Source (Development)
 
 1. Clone the repository:
    ```bash

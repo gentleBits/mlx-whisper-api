@@ -2,7 +2,7 @@
 name = "mlx-whisper-api"
 version = "0.1.0"
 description = "REST API for audio-to-text transcription using MLX-optimized Whisper models on Apple Silicon"
-authors = ["Your Name <you@example.com>"]
+authors = ["Cosmin U."]
 readme = "README.md"
 packages = [{include = "app"}]
 
