@@ -1,0 +1,90 @@
+name: Test Homebrew Installation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-pip-install:
+    name: Test pip install
+    runs-on: macos-14
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package via pip
+        run: pip install .
+
+      - name: Verify CLI version
+        run: mlx-whisper-api --version
+
+      - name: Start server in background
+        run: |
+          mlx-whisper-api --port 8080 &
+          echo $! > server.pid
+          sleep 5
+
+      - name: Test health endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/health)
+          if [ "$response" != "200" ]; then
+            echo "Health check failed with status: $response"
+            exit 1
+          fi
+          echo "Health check passed"
+
+      - name: Shutdown server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) 2>/dev/null || true
+          fi
+
+  test-brew-install:
+    name: Test brew install --HEAD
+    runs-on: macos-14
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Tap gentleBits/mlx-whisper-api
+        run: brew tap gentleBits/mlx-whisper-api
+
+      - name: Audit formula
+        run: brew audit --strict gentleBits/mlx-whisper-api/mlx-whisper-api || true
+
+      - name: Install from HEAD
+        run: brew install --HEAD mlx-whisper-api
+
+      - name: Run formula test
+        run: brew test mlx-whisper-api
+
+      - name: Verify CLI version
+        run: mlx-whisper-api --version
+
+      - name: Start server in background
+        run: |
+          mlx-whisper-api --port 8080 &
+          echo $! > server.pid
+          sleep 5
+
+      - name: Test health endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/health)
+          if [ "$response" != "200" ]; then
+            echo "Health check failed with status: $response"
+            exit 1
+          fi
+          echo "Health check passed"
+
+      - name: Shutdown server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) 2>/dev/null || true
+          fi

@@ -47,3 +47,6 @@ docs/
 
 # Test artifacts
 t1.py
+
+# Allow GitHub workflows (overrides global gitignore)
+!.github/
