@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "REST API for audio-to-text transcription using MLX-optimized Whisper models on Apple Silicon"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
@@ -13,6 +14,9 @@ fastapi = "^0.109.0"
 uvicorn = {extras = ["standard"], version = "^0.27.0"}
 python-multipart = "^0.0.6"
 huggingface_hub = "^0.20.0"
+
+[tool.poetry.scripts]
+mlx-whisper-api = "app.__main__:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
