@@ -4,11 +4,11 @@
 # Homebrew formula for MLX Whisper API
 #
 # To use this formula:
-#   1. Create a tap repository: github.com/YOURUSERNAME/homebrew-mlx-whisper-api
+#   1. Create a tap repository: github.com/gentleBits/homebrew-mlx-whisper-api
 #   2. Copy this file to Formula/mlx-whisper-api.rb in that repository
 #   3. Update the url, sha256, and resource blocks with actual values
 #   4. Users can then install with:
-#        brew tap YOURUSERNAME/mlx-whisper-api
+#        brew tap gentleBits/mlx-whisper-api
 #        brew install mlx-whisper-api
 #
 # To generate resource blocks for dependencies, use homebrew-pypi-poet:
@@ -19,14 +19,14 @@ class MlxWhisperApi < Formula
   include Language::Python::Virtualenv
 
   desc "REST API for audio-to-text transcription using MLX Whisper on Apple Silicon"
-  homepage "https://github.com/YOURUSERNAME/mlx-whisper-api"
+  homepage "https://github.com/gentleBits/mlx-whisper-api"
   # Option 1: Install from PyPI (preferred, after publishing)
   # url "https://files.pythonhosted.org/packages/source/m/mlx-whisper-api/mlx_whisper_api-0.1.0.tar.gz"
   # Option 2: Install from GitHub release tarball
-  url "https://github.com/YOURUSERNAME/mlx-whisper-api/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "REPLACE_WITH_SHA256_OF_RELEASE_TARBALL"
+  url "https://github.com/gentleBits/mlx-whisper-api/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "b4d426598d4d7c1ad054f403cbc36a8c85995ae4e2a4efc5092404cd3bfaa95c"
   license "MIT"
-  head "https://github.com/YOURUSERNAME/mlx-whisper-api.git", branch: "main"
+  head "https://github.com/gentleBits/mlx-whisper-api.git", branch: "main"
 
   # MLX requires Apple Silicon
   depends_on arch: :arm64

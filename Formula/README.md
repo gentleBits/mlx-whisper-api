@@ -8,11 +8,11 @@ This directory contains the Homebrew formula for distributing MLX Whisper API vi
 
 1. Create a new GitHub repository named `homebrew-mlx-whisper-api`
    - The `homebrew-` prefix is **required** for Homebrew taps
-   - Example: `https://github.com/YOURUSERNAME/homebrew-mlx-whisper-api`
+   - Example: `https://github.com/gentleBits/homebrew-mlx-whisper-api`
 
 2. Clone the repository:
    ```bash
-   git clone https://github.com/YOURUSERNAME/homebrew-mlx-whisper-api.git
+   git clone https://github.com/gentleBits/homebrew-mlx-whisper-api.git
    cd homebrew-mlx-whisper-api
    ```
 
@@ -46,7 +46,7 @@ poetry publish
 1. **Get the SHA256 hash** of your release tarball:
    ```bash
    # For GitHub release:
-   curl -sL https://github.com/YOURUSERNAME/mlx-whisper-api/archive/refs/tags/v0.1.0.tar.gz | shasum -a 256
+   curl -sL https://github.com/gentleBits/mlx-whisper-api/archive/refs/tags/v0.1.0.tar.gz | shasum -a 256
 
    # For PyPI:
    curl -sL https://files.pythonhosted.org/packages/source/m/mlx-whisper-api/mlx_whisper_api-0.1.0.tar.gz | shasum -a 256
@@ -88,7 +88,7 @@ git push origin main
 
 Users can now install:
 ```bash
-brew tap YOURUSERNAME/mlx-whisper-api
+brew tap gentleBits/mlx-whisper-api
 brew install mlx-whisper-api
 ```
 
@@ -100,7 +100,7 @@ When you release a new version:
 2. Get the new SHA256 hash
 3. Update the formula:
    ```ruby
-   url "https://github.com/YOURUSERNAME/mlx-whisper-api/archive/refs/tags/v0.2.0.tar.gz"
+   url "https://github.com/gentleBits/mlx-whisper-api/archive/refs/tags/v0.2.0.tar.gz"
    sha256 "NEW_SHA256_HASH"
    ```
 4. Update any changed dependency versions
