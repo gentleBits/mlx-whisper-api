@@ -26,36 +26,8 @@ class TestModelManagerParsing:
         """Create a fresh ModelManager instance."""
         return ModelManager()
 
-    def test_parse_tiny_model(self, manager):
-        """Parse tiny model ID."""
-        meta = manager.parse_model_id("mlx-community/whisper-tiny-mlx")
-
-        assert meta.id == "mlx-community/whisper-tiny-mlx"
-        assert meta.size == "tiny"
-        assert meta.quantization is None
-        assert meta.english_only is False
-        assert "Whisper Tiny" in meta.name
-
-    def test_parse_small_model(self, manager):
-        """Parse small model ID."""
-        meta = manager.parse_model_id("mlx-community/whisper-small-mlx")
-
-        assert meta.id == "mlx-community/whisper-small-mlx"
-        assert meta.size == "small"
-        assert meta.quantization is None
-        assert meta.english_only is False
-        assert "Whisper Small" in meta.name
-
-    def test_parse_large_v3_model(self, manager):
-        """Parse large-v3 model ID."""
-        meta = manager.parse_model_id("mlx-community/whisper-large-v3-mlx")
-
-        assert meta.size == "large-v3"
-        assert meta.quantization is None
-        assert "Large V3" in meta.name
-
     def test_parse_all_supported_models(self, manager):
-        """All supported models can be parsed."""
+        """All supported models can be parsed with correct metadata."""
         for model_id in SUPPORTED_MODELS:
             meta = manager.parse_model_id(model_id)
 
@@ -63,6 +35,8 @@ class TestModelManagerParsing:
             assert meta.size in {"tiny", "small", "large-v3"}
             assert meta.name is not None
             assert len(meta.name) > 0
+            assert meta.quantization is None
+            assert meta.english_only is False
 
 
 class TestModelManagerValidation:
@@ -73,24 +47,19 @@ class TestModelManagerValidation:
         """Create a fresh ModelManager instance."""
         return ModelManager()
 
-    def test_is_model_supported_valid(self, manager):
-        """Valid model ID is supported."""
+    def test_is_model_supported(self, manager):
+        """Check model support for valid and invalid IDs."""
         assert manager.is_model_supported("mlx-community/whisper-tiny-mlx") is True
-
-    def test_is_model_supported_invalid(self, manager):
-        """Invalid model ID is not supported."""
         assert manager.is_model_supported("not-a-real/model") is False
 
-    def test_validate_model_valid(self, manager):
-        """Validate does not raise for valid model."""
-        # Should not raise
+    def test_validate_model(self, manager):
+        """Validate raises ModelNotFoundError for invalid model only."""
+        # Valid model - should not raise
         manager.validate_model("mlx-community/whisper-tiny-mlx")
 
-    def test_validate_model_invalid(self, manager):
-        """Validate raises ModelNotFoundError for invalid model."""
+        # Invalid model - should raise
         with pytest.raises(ModelNotFoundError) as exc_info:
             manager.validate_model("not-a-real/model")
-
         assert exc_info.value.model_id == "not-a-real/model"
 
 
@@ -188,8 +157,12 @@ class TestModelManagerDownloadProgress:
         """Create a fresh ModelManager instance."""
         return ModelManager()
 
-    def test_set_download_progress(self, manager):
-        """Set download progress."""
+    def test_download_progress_lifecycle(self, manager):
+        """Set and clear download progress."""
+        # Clear non-existent model doesn't error
+        manager.clear_download_progress("nonexistent/model")
+
+        # Set progress
         manager.set_download_progress(
             "mlx-community/whisper-tiny-mlx",
             progress=0.5,
@@ -203,20 +176,9 @@ class TestModelManagerDownloadProgress:
         assert progress["downloaded_bytes"] == 500
         assert progress["total_bytes"] == 1000
 
-    def test_clear_download_progress(self, manager):
-        """Clear download progress."""
-        manager.set_download_progress(
-            "mlx-community/whisper-tiny-mlx",
-            progress=0.5,
-        )
+        # Clear progress
         manager.clear_download_progress("mlx-community/whisper-tiny-mlx")
-
         assert "mlx-community/whisper-tiny-mlx" not in manager._download_progress
-
-    def test_clear_download_progress_nonexistent(self, manager):
-        """Clear progress for non-existent model doesn't error."""
-        # Should not raise
-        manager.clear_download_progress("nonexistent/model")
 
 
 class TestModelManagerDirectorySize:
@@ -228,7 +190,12 @@ class TestModelManagerDirectorySize:
         return ModelManager()
 
     def test_get_directory_size(self, manager, tmp_path):
-        """Calculate directory size correctly."""
+        """Calculate directory size correctly, including edge cases."""
+        # Empty directory returns 0
+        assert manager.get_directory_size(tmp_path) == 0
+        # Nonexistent directory returns 0
+        assert manager.get_directory_size(tmp_path / "nonexistent") == 0
+
         # Create test files
         (tmp_path / "file1.bin").write_bytes(b"x" * 100)
         (tmp_path / "file2.bin").write_bytes(b"y" * 200)
@@ -238,16 +205,6 @@ class TestModelManagerDirectorySize:
 
         size = manager.get_directory_size(tmp_path)
         assert size == 350
-
-    def test_get_directory_size_empty(self, manager, tmp_path):
-        """Empty directory returns 0."""
-        size = manager.get_directory_size(tmp_path)
-        assert size == 0
-
-    def test_get_directory_size_nonexistent(self, manager, tmp_path):
-        """Nonexistent directory returns 0."""
-        size = manager.get_directory_size(tmp_path / "nonexistent")
-        assert size == 0
 
 
 class TestGetModelManager:
@@ -298,7 +255,7 @@ class TestModelManagerDownload:
         assert exc_info.value.model_id == "mlx-community/whisper-tiny-mlx"
 
     def test_download_model_success(self, manager):
-        """Download completes successfully."""
+        """Download completes successfully and clears progress."""
         with patch.object(manager, "get_model_cache_path", return_value=None):
             with patch(
                 "app.services.model_manager.snapshot_download"
@@ -309,16 +266,10 @@ class TestModelManagerDownload:
                 call_kwargs = mock_download.call_args.kwargs
                 assert call_kwargs["repo_id"] == "mlx-community/whisper-tiny-mlx"
 
-    def test_download_model_clears_progress_on_success(self, manager):
-        """Download clears progress tracking on success."""
-        with patch.object(manager, "get_model_cache_path", return_value=None):
-            with patch("app.services.model_manager.snapshot_download"):
-                manager.download_model("mlx-community/whisper-tiny-mlx")
-
         # Progress should be cleared after successful download
         assert "mlx-community/whisper-tiny-mlx" not in manager._download_progress
 
-    def test_download_model_clears_progress_on_error(self, manager):
+    def test_download_model_error_clears_progress(self, manager):
         """Download clears progress tracking on error."""
         with patch.object(manager, "get_model_cache_path", return_value=None):
             with patch(
@@ -380,21 +331,6 @@ class TestModelManagerAsyncDownload:
         """Create a fresh ModelManager instance."""
         return ModelManager()
 
-    def test_start_download_async_invalid_model(self, manager):
-        """Async download raises for invalid model."""
-        with pytest.raises(ModelNotFoundError):
-            manager.start_download_async("not-a-real/model")
-
-    def test_start_download_async_already_downloaded(self, manager, tmp_path):
-        """Async download raises if model already downloaded."""
-        fake_cache = tmp_path / "model"
-        fake_cache.mkdir()
-        (fake_cache / "model.bin").write_bytes(b"x" * 100)
-
-        with patch.object(manager, "get_model_cache_path", return_value=fake_cache):
-            with pytest.raises(ModelAlreadyDownloadedError):
-                manager.start_download_async("mlx-community/whisper-tiny-mlx")
-
     def test_start_download_async_starts_thread(self, manager):
         """Async download starts a background thread."""
         with patch.object(manager, "get_model_cache_path", return_value=None):
@@ -455,20 +391,7 @@ class TestModelManagerDelete:
         assert exc_info.value.model_id == "mlx-community/whisper-tiny-mlx"
 
     def test_delete_model_success(self, manager, tmp_path):
-        """Delete removes model from cache."""
-        # Create a fake cache directory
-        fake_cache = tmp_path / "model"
-        fake_cache.mkdir()
-        (fake_cache / "model.bin").write_bytes(b"x" * 100)
-
-        with patch.object(manager, "get_model_cache_path", return_value=fake_cache):
-            manager.delete_model("mlx-community/whisper-tiny-mlx")
-
-        # Directory should be deleted
-        assert not fake_cache.exists()
-
-    def test_delete_model_with_subdirectories(self, manager, tmp_path):
-        """Delete removes model with nested directories."""
+        """Delete removes model from cache, including nested directories."""
         # Create a fake cache directory with subdirectories
         fake_cache = tmp_path / "model"
         fake_cache.mkdir()

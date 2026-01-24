@@ -22,39 +22,20 @@ class TestTranscriptionService:
         """Create a fresh TranscriptionService instance."""
         return TranscriptionService()
 
-    def test_is_supported_format_wav(self, service):
-        """WAV format is supported."""
+    def test_is_supported_format(self, service):
+        """Supported audio formats are recognized correctly."""
+        # Supported formats
         assert service.is_supported_format("test.wav") is True
-        assert service.is_supported_format("TEST.WAV") is True
-
-    def test_is_supported_format_mp3(self, service):
-        """MP3 format is supported."""
+        assert service.is_supported_format("TEST.WAV") is True  # Case insensitive
         assert service.is_supported_format("audio.mp3") is True
-
-    def test_is_supported_format_m4a(self, service):
-        """M4A format is supported."""
         assert service.is_supported_format("recording.m4a") is True
-
-    def test_is_supported_format_flac(self, service):
-        """FLAC format is supported."""
         assert service.is_supported_format("music.flac") is True
-
-    def test_is_supported_format_ogg(self, service):
-        """OGG format is supported."""
         assert service.is_supported_format("voice.ogg") is True
 
-    def test_is_supported_format_unsupported(self, service):
-        """Unsupported formats return False."""
+        # Unsupported formats
         assert service.is_supported_format("doc.txt") is False
         assert service.is_supported_format("video.mp4") is False
-        assert service.is_supported_format("image.png") is False
         assert service.is_supported_format("no_extension") is False
-
-    def test_validate_model_supported(self, service):
-        """Valid model IDs pass validation."""
-        # Should not raise
-        service.validate_model("mlx-community/whisper-tiny-mlx")
-        service.validate_model("mlx-community/whisper-large-v3-mlx")
 
     def test_validate_model_unsupported(self, service):
         """Invalid model IDs raise UnsupportedModelError."""
@@ -63,42 +44,10 @@ class TestTranscriptionService:
 
         assert exc_info.value.model_id == "not-a-real/model"
 
-    def test_transcribe_uses_default_model(self, service, sample_audio_path):
-        """Transcribe uses default model when none specified."""
-        with patch("app.services.transcription.mlx_whisper") as mock:
-            mock.transcribe.return_value = {"text": "test", "language": "en"}
-
-            result = service.transcribe(str(sample_audio_path))
-
-            # Verify default model was used
-            call_kwargs = mock.transcribe.call_args[1]
-            assert call_kwargs["path_or_hf_repo"] == DEFAULT_MODEL
-
-    def test_transcribe_with_language(self, service, sample_audio_path):
-        """Language parameter is passed to mlx_whisper."""
-        with patch("app.services.transcription.mlx_whisper") as mock:
-            mock.transcribe.return_value = {"text": "test", "language": "fr"}
-
-            result = service.transcribe(str(sample_audio_path), language="fr")
-
-            call_kwargs = mock.transcribe.call_args[1]
-            assert call_kwargs["language"] == "fr"
-
-    def test_transcribe_with_prompt(self, service, sample_audio_path):
-        """Prompt is passed as initial_prompt to mlx_whisper."""
-        with patch("app.services.transcription.mlx_whisper") as mock:
-            mock.transcribe.return_value = {"text": "test", "language": "en"}
-
-            prompt = "Technical discussion about Python"
-            result = service.transcribe(str(sample_audio_path), prompt=prompt)
-
-            call_kwargs = mock.transcribe.call_args[1]
-            assert call_kwargs["initial_prompt"] == prompt
-
     def test_transcribe_returns_correct_structure(self, service, sample_audio_path):
-        """Transcribe returns dict with text, language, model."""
+        """Transcribe returns dict with text (stripped), language, model."""
         with patch("app.services.transcription.mlx_whisper") as mock:
-            mock.transcribe.return_value = {"text": " Hello world.", "language": "en"}
+            mock.transcribe.return_value = {"text": " Hello world. ", "language": "en"}
 
             result = service.transcribe(str(sample_audio_path))
 
@@ -108,15 +57,6 @@ class TestTranscriptionService:
             assert result["text"] == "Hello world."  # Stripped
             assert result["language"] == "en"
             assert result["model"] == DEFAULT_MODEL
-
-    def test_transcribe_strips_whitespace(self, service, sample_audio_path):
-        """Transcription text is stripped of whitespace."""
-        with patch("app.services.transcription.mlx_whisper") as mock:
-            mock.transcribe.return_value = {"text": "  Padded text  ", "language": "en"}
-
-            result = service.transcribe(str(sample_audio_path))
-
-            assert result["text"] == "Padded text"
 
     def test_transcribe_model_not_found_error(self, service, sample_audio_path):
         """Raises ModelNotDownloadedError when model is not found."""

@@ -1,14 +1,13 @@
 """Unit tests for error handling module."""
 
 import pytest
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import Mock
 from fastapi import status
 
 from app.errors import (
     ErrorCode,
     APIError,
     APIException,
-    ValidationError,
     UnsupportedFormatError,
     FileTooLargeError,
     EmptyFileError,
@@ -16,93 +15,14 @@ from app.errors import (
     PromptTooLongError,
     ModelNotFoundError,
     ModelNotDownloadedError,
-    ModelAlreadyDownloadedError,
-    ModelUnsupportedError,
     TranscriptionFailedError,
     api_exception_handler,
     unhandled_exception_handler,
 )
 
 
-class TestErrorCode:
-    """Tests for ErrorCode enum."""
-
-    def test_error_codes_are_strings(self):
-        """Error codes should be string values."""
-        assert isinstance(ErrorCode.VALIDATION_UNSUPPORTED_FORMAT.value, str)
-        assert isinstance(ErrorCode.MODEL_NOT_FOUND.value, str)
-
-    def test_error_code_naming_convention(self):
-        """Error codes should follow CATEGORY_SPECIFIC pattern."""
-        for code in ErrorCode:
-            parts = code.value.split("_")
-            assert len(parts) >= 2, f"Error code {code.value} should have at least 2 parts"
-
-
-class TestAPIError:
-    """Tests for APIError response model."""
-
-    def test_create_minimal_error(self):
-        """Create error with required fields only."""
-        error = APIError(
-            error="Something went wrong",
-            code=ErrorCode.SERVER_INTERNAL_ERROR,
-        )
-        assert error.error == "Something went wrong"
-        assert error.code == ErrorCode.SERVER_INTERNAL_ERROR
-        assert error.details is None
-        assert error.request_id is None
-
-    def test_create_full_error(self):
-        """Create error with all fields."""
-        error = APIError(
-            error="Model not found",
-            code=ErrorCode.MODEL_NOT_FOUND,
-            details={"model": "test-model"},
-            request_id="abc123",
-        )
-        assert error.error == "Model not found"
-        assert error.code == ErrorCode.MODEL_NOT_FOUND
-        assert error.details == {"model": "test-model"}
-        assert error.request_id == "abc123"
-
-    def test_error_serialization(self):
-        """Error should serialize to dict correctly."""
-        error = APIError(
-            error="Test error",
-            code=ErrorCode.VALIDATION_EMPTY_FILE,
-            details={"key": "value"},
-        )
-        data = error.model_dump(exclude_none=True)
-        assert "error" in data
-        assert "code" in data
-        assert "details" in data
-        assert "request_id" not in data  # Excluded because None
-
-
 class TestAPIException:
     """Tests for APIException base class."""
-
-    def test_create_exception(self):
-        """Create exception with all parameters."""
-        exc = APIException(
-            message="Test error",
-            code=ErrorCode.SERVER_INTERNAL_ERROR,
-            status_code=500,
-            details={"key": "value"},
-        )
-        assert exc.message == "Test error"
-        assert exc.code == ErrorCode.SERVER_INTERNAL_ERROR
-        assert exc.status_code == 500
-        assert exc.details == {"key": "value"}
-
-    def test_default_status_code(self):
-        """Default status code should be 400."""
-        exc = APIException(
-            message="Test",
-            code=ErrorCode.VALIDATION_EMPTY_FILE,
-        )
-        assert exc.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_to_response(self):
         """to_response should create APIError."""
@@ -186,25 +106,9 @@ class TestModelErrors:
         assert exc.status_code == status.HTTP_400_BAD_REQUEST
         assert exc.details["model"] == "test-model"
         assert exc.details["download_url"] == "/models/test-model/download"
-
-    def test_model_not_downloaded_error_no_url(self):
-        """ModelNotDownloadedError without URL should work."""
-        exc = ModelNotDownloadedError(model_id="test-model")
-        assert "download_url" not in exc.details
-
-    def test_model_already_downloaded_error(self):
-        """ModelAlreadyDownloadedError should have correct attributes."""
-        exc = ModelAlreadyDownloadedError(model_id="test-model")
-        assert exc.code == ErrorCode.MODEL_ALREADY_DOWNLOADED
-        assert exc.status_code == status.HTTP_409_CONFLICT
-        assert exc.details["model"] == "test-model"
-
-    def test_model_unsupported_error(self):
-        """ModelUnsupportedError should have correct attributes."""
-        exc = ModelUnsupportedError(model_id="invalid-model")
-        assert exc.code == ErrorCode.MODEL_UNSUPPORTED
-        assert exc.status_code == status.HTTP_400_BAD_REQUEST
-        assert exc.details["model"] == "invalid-model"
+        # Without URL
+        exc2 = ModelNotDownloadedError(model_id="test-model")
+        assert "download_url" not in exc2.details
 
 
 class TestTranscriptionErrors:

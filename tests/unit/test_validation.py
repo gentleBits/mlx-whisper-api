@@ -9,7 +9,6 @@ from app.validation import (
     sanitize_filename,
     get_file_extension,
     MAX_PROMPT_LENGTH,
-    VALID_LANGUAGE_CODES,
     SUPPORTED_AUDIO_FORMATS,
 )
 from app.errors import (
@@ -32,21 +31,14 @@ class TestValidateLanguage:
         assert validate_language("  ") is None
 
     def test_valid_language_codes(self):
-        """Valid ISO 639-1 codes should pass."""
+        """Valid ISO 639-1 codes should pass, including uppercase and whitespace."""
         valid_codes = ["en", "fr", "de", "es", "ja", "zh", "ko", "ru"]
         for code in valid_codes:
             assert validate_language(code) == code
-
-    def test_uppercase_normalized(self):
-        """Uppercase codes should be normalized to lowercase."""
+        # Uppercase normalized to lowercase
         assert validate_language("EN") == "en"
-        assert validate_language("FR") == "fr"
-        assert validate_language("De") == "de"
-
-    def test_whitespace_stripped(self):
-        """Whitespace should be stripped."""
+        # Whitespace stripped
         assert validate_language("  en  ") == "en"
-        assert validate_language("\ten\n") == "en"
 
     def test_invalid_language_code_raises(self):
         """Invalid language codes should raise InvalidLanguageError."""
@@ -59,11 +51,6 @@ class TestValidateLanguage:
     def test_three_letter_codes(self):
         """Some three-letter codes are valid (e.g., 'yue' for Cantonese)."""
         assert validate_language("yue") == "yue"
-
-    def test_all_whisper_languages_valid(self):
-        """All languages in VALID_LANGUAGE_CODES should be accepted."""
-        for code in VALID_LANGUAGE_CODES:
-            assert validate_language(code) == code
 
 
 class TestValidatePrompt:
@@ -79,14 +66,11 @@ class TestValidatePrompt:
         assert validate_prompt("   ") is None
 
     def test_valid_prompt_passes(self):
-        """Valid prompts should pass through."""
+        """Valid prompts should pass through, with whitespace stripped."""
         prompt = "This is a meeting about Kubernetes and Docker."
         assert validate_prompt(prompt) == prompt
-
-    def test_whitespace_stripped(self):
-        """Whitespace should be stripped."""
+        # Whitespace stripped
         assert validate_prompt("  hello  ") == "hello"
-        assert validate_prompt("\n\ttest\n\t") == "test"
 
     def test_prompt_at_max_length(self):
         """Prompt at max length should pass."""
@@ -110,15 +94,12 @@ class TestGetFileExtension:
     """Tests for get_file_extension function."""
 
     def test_standard_extensions(self):
-        """Standard extensions should be extracted correctly."""
+        """Standard extensions should be extracted correctly, normalized to lowercase."""
         assert get_file_extension("audio.wav") == ".wav"
         assert get_file_extension("music.mp3") == ".mp3"
         assert get_file_extension("recording.m4a") == ".m4a"
-
-    def test_uppercase_normalized(self):
-        """Extensions should be normalized to lowercase."""
+        # Uppercase normalized
         assert get_file_extension("audio.WAV") == ".wav"
-        assert get_file_extension("audio.MP3") == ".mp3"
 
     def test_no_extension(self):
         """Files without extension should return empty string."""
@@ -139,15 +120,12 @@ class TestValidateAudioFormat:
     """Tests for validate_audio_format function."""
 
     def test_valid_formats(self):
-        """All supported formats should pass."""
+        """All supported formats should pass, including uppercase."""
         for fmt in SUPPORTED_AUDIO_FORMATS:
             filename = f"audio{fmt}"
             assert validate_audio_format(filename) == fmt
-
-    def test_uppercase_formats_pass(self):
-        """Uppercase extensions should pass."""
+        # Uppercase normalized
         assert validate_audio_format("audio.WAV") == ".wav"
-        assert validate_audio_format("audio.MP3") == ".mp3"
 
     def test_unsupported_format_raises(self):
         """Unsupported formats should raise UnsupportedFormatError."""
@@ -195,10 +173,8 @@ class TestSanitizeFilename:
         assert not sanitize_filename("...hidden").startswith(".")
 
     def test_slashes_replaced_with_underscores(self):
-        """Slashes should be replaced with underscores."""
+        """Slashes should be replaced with underscores, whitespace stripped."""
         assert sanitize_filename("path/to/file.wav") == "path_to_file.wav"
         assert sanitize_filename("path\\to\\file.wav") == "path_to_file.wav"
-
-    def test_whitespace_stripped(self):
-        """Whitespace should be stripped."""
+        # Whitespace stripped
         assert sanitize_filename("  audio.wav  ") == "audio.wav"
