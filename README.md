@@ -8,11 +8,11 @@ REST API for audio-to-text transcription using MLX-optimized Whisper models on A
 - **MLX-optimized Whisper models** including tiny, small, and large-v3
 - **Model download management** with progress tracking
 - **Prompt support** for guided transcription
-- **Runs entirely offline** on Apple Silicon Macs (M1/M2/M3/M4)
+- **Runs entirely offline** on Apple Silicon Macs (M1/M2/M3/M4/M5)
 
 ## Requirements
 
-- macOS with Apple Silicon (M1/M2/M3/M4)
+- macOS with Apple Silicon (M1/M2/M3/M4/M5 and future M-series chips)
 - Python 3.10-3.12
 
 ## Installation
@@ -292,17 +292,19 @@ curl -X POST http://localhost:1738/transcribe \
 
 ## Supported Models
 
-All models are from the [mlx-community](https://huggingface.co/mlx-community) on HuggingFace.
+MLX-optimized Whisper models from HuggingFace.
 
 | Model ID | Size | Description |
 |----------|------|-------------|
-| `mlx-community/whisper-tiny-mlx` | Tiny | Fastest, lowest accuracy |
-| `mlx-community/whisper-small-mlx` | Small | Balanced speed and accuracy |
-| `mlx-community/whisper-large-v3-mlx` | Large | Best accuracy (default) |
+| `mlx-community/whisper-tiny-mlx` | ~71 MB | Fastest, lowest accuracy |
+| `mlx-community/whisper-small-mlx` | ~460 MB | Balanced speed and accuracy |
+| `mlx-community/whisper-large-v3-mlx` | ~2.9 GB | Best accuracy (default) |
+| `LibraxisAI/whisper-large-v3-mlx-q8` | ~1.7 GB | Large V3 quantized (Q8), good accuracy with lower memory |
 
 **Notes:**
 - Larger models provide better accuracy but require more memory and processing time
 - The default model is `whisper-large-v3-mlx` for best quality
+- The quantized Q8 model offers a good trade-off between accuracy and memory usage
 
 ## Running Tests
 
