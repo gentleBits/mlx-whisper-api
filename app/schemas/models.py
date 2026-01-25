@@ -21,11 +21,8 @@ class ModelStatus(str, Enum):
 class ModelSize(str, Enum):
     """Size category of a Whisper model."""
     TINY = "tiny"
-    BASE = "base"
     SMALL = "small"
-    MEDIUM = "medium"
     LARGE = "large"
-    TURBO = "turbo"
 
 
 class TranscriptionResponse(BaseModel):
@@ -80,13 +77,13 @@ class ModelInfo(BaseModel):
     )
     size: str = Field(
         ...,
-        description="Model size category (tiny, base, small, medium, large, turbo)",
+        description="Model size category (tiny, small, large)",
         examples=["large"]
     )
     quantization: Optional[str] = Field(
         default=None,
-        description="Quantization level if applicable (q4, 8bit, etc.)",
-        examples=["q4"]
+        description="Quantization level if applicable",
+        examples=[None]
     )
     english_only: bool = Field(
         default=False,

@@ -11,9 +11,10 @@ DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "mlx-community/whisper-large-v3-mlx")
 MAX_AUDIO_SIZE_MB = int(os.getenv("MAX_AUDIO_SIZE_MB", "100"))
 HUGGINGFACE_CACHE = os.getenv("HUGGINGFACE_CACHE", os.path.expanduser("~/.cache/huggingface"))
 
-# Supported models (from mlx-community)
+# Supported models (MLX-optimized Whisper models from HuggingFace)
 SUPPORTED_MODELS = [
     "mlx-community/whisper-tiny-mlx",
     "mlx-community/whisper-small-mlx",
     "mlx-community/whisper-large-v3-mlx",
+    "LibraxisAI/whisper-large-v3-mlx-q8",
 ]

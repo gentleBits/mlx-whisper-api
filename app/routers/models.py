@@ -43,7 +43,7 @@ List all supported MLX Whisper models with their current status.
 Each model includes:
 - **id**: Unique model identifier (HuggingFace repo path)
 - **name**: Human-readable name
-- **size**: Model size category (tiny, base, small, medium, large, turbo)
+- **size**: Model size category (tiny, small, large)
 - **quantization**: Quantization level if applicable (q4, 8bit, etc.)
 - **english_only**: Whether the model only supports English
 - **status**: Current status (downloaded, not_downloaded, downloading, error)

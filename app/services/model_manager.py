@@ -77,14 +77,9 @@ class ModelManager:
     # Size display names
     SIZE_NAMES = {
         "tiny": "Tiny",
-        "base": "Base",
         "small": "Small",
-        "medium": "Medium",
         "large": "Large",
-        "large-v1": "Large V1",
-        "large-v2": "Large V2",
         "large-v3": "Large V3",
-        "large-v3-turbo": "Large V3 Turbo",
     }
 
     def __init__(self):
@@ -114,20 +109,16 @@ class ModelManager:
         # Remove "whisper-" prefix
         model_name = model_name.replace("whisper-", "")
 
-        # Check for quantization suffix
         quantization = None
-        if model_name.endswith("-q4"):
-            quantization = "q4"
-            model_name = model_name[:-3]
-        elif model_name.endswith("-8bit"):
-            quantization = "8bit"
-            model_name = model_name[:-5]
-        elif model_name.endswith("-4bit"):
-            quantization = "4bit"
-            model_name = model_name[:-5]
 
-        # Remove "-mlx" suffix
+        # Remove "-mlx" suffix (handles both "-mlx" at end and "-mlx-" in middle)
         model_name = model_name.replace("-mlx", "")
+
+        # Extract quantization suffix (e.g., -q8, -q4)
+        quant_match = re.search(r"-q(\d+)$", model_name)
+        if quant_match:
+            quantization = f"q{quant_match.group(1)}"
+            model_name = model_name[: quant_match.start()]
 
         # Check for English-only variant
         english_only = ".en" in model_name
@@ -149,23 +140,12 @@ class ModelManager:
 
     def _extract_size(self, model_name: str) -> str:
         """Extract the model size from the parsed name."""
-        # Check for specific versions first (order matters)
-        if "large-v3-turbo" in model_name:
-            return "large-v3-turbo"
-        elif "large-v3" in model_name:
+        if "large-v3" in model_name:
             return "large-v3"
-        elif "large-v2" in model_name:
-            return "large-v2"
-        elif "large-v1" in model_name:
-            return "large-v1"
         elif "large" in model_name:
             return "large"
-        elif "medium" in model_name:
-            return "medium"
         elif "small" in model_name:
             return "small"
-        elif "base" in model_name:
-            return "base"
         elif "tiny" in model_name:
             return "tiny"
         return "unknown"
@@ -221,7 +201,9 @@ class ModelManager:
         total = 0
         try:
             for entry in path.rglob("*"):
-                if entry.is_file():
+                # Skip symlinks to avoid double-counting (HuggingFace cache uses
+                # symlinks in snapshots/ pointing to actual files in blobs/)
+                if entry.is_file() and not entry.is_symlink():
                     total += entry.stat().st_size
         except Exception:
             pass
