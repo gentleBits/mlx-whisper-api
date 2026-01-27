@@ -299,7 +299,7 @@ MLX-optimized Whisper models from HuggingFace.
 | `mlx-community/whisper-tiny-mlx` | ~71 MB | Fastest, lowest accuracy |
 | `mlx-community/whisper-small-mlx` | ~460 MB | Balanced speed and accuracy |
 | `mlx-community/whisper-large-v3-mlx` | ~2.9 GB | Best accuracy (default) |
-| `LibraxisAI/whisper-large-v3-mlx-q8` | ~1.7 GB | Large V3 quantized (Q8), good accuracy with lower memory |
+| `mlx-community/whisper-large-v3-mlx-8bit` | ~1.7 GB | Large V3 quantized (8-bit), good accuracy with lower memory |
 
 **Notes:**
 - Larger models provide better accuracy but require more memory and processing time

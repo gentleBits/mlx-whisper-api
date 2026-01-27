@@ -16,5 +16,5 @@ SUPPORTED_MODELS = [
     "mlx-community/whisper-tiny-mlx",
     "mlx-community/whisper-small-mlx",
     "mlx-community/whisper-large-v3-mlx",
-    "LibraxisAI/whisper-large-v3-mlx-q8",
+    "mlx-community/whisper-large-v3-mlx-8bit",
 ]

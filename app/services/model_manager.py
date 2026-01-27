@@ -114,11 +114,15 @@ class ModelManager:
         # Remove "-mlx" suffix (handles both "-mlx" at end and "-mlx-" in middle)
         model_name = model_name.replace("-mlx", "")
 
-        # Extract quantization suffix (e.g., -q8, -q4)
+        # Extract quantization suffix (e.g., -q8, -q4, -8bit, -4bit)
         quant_match = re.search(r"-q(\d+)$", model_name)
+        bit_match = re.search(r"-(\d+bit)$", model_name)
         if quant_match:
             quantization = f"q{quant_match.group(1)}"
             model_name = model_name[: quant_match.start()]
+        elif bit_match:
+            quantization = bit_match.group(1)
+            model_name = model_name[: bit_match.start()]
 
         # Check for English-only variant
         english_only = ".en" in model_name

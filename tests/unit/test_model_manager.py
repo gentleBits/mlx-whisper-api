@@ -35,17 +35,17 @@ class TestModelManagerParsing:
             assert meta.size in {"tiny", "small", "large-v3"}
             assert meta.name is not None
             assert len(meta.name) > 0
-            assert meta.quantization is None or meta.quantization.startswith("q")
+            assert meta.quantization is None or meta.quantization.startswith("q") or meta.quantization.endswith("bit")
             assert meta.english_only is False
 
     def test_parse_quantized_model(self, manager):
         """Quantized model ID is parsed with correct quantization metadata."""
-        meta = manager.parse_model_id("LibraxisAI/whisper-large-v3-mlx-q8")
+        meta = manager.parse_model_id("mlx-community/whisper-large-v3-mlx-8bit")
 
-        assert meta.id == "LibraxisAI/whisper-large-v3-mlx-q8"
+        assert meta.id == "mlx-community/whisper-large-v3-mlx-8bit"
         assert meta.size == "large-v3"
-        assert meta.quantization == "q8"
-        assert meta.name == "Whisper Large V3 (Q8)"
+        assert meta.quantization == "8bit"
+        assert meta.name == "Whisper Large V3 (8BIT)"
         assert meta.english_only is False
 
 
