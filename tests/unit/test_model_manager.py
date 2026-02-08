@@ -18,6 +18,12 @@ from app.services.model_manager import (
 from app.config import SUPPORTED_MODELS
 
 
+@pytest.fixture(autouse=True)
+def isolate_huggingface_cache(tmp_path, monkeypatch):
+    """Isolate model cache path per test to avoid cross-test contamination."""
+    monkeypatch.setattr("app.services.model_manager.HUGGINGFACE_CACHE", str(tmp_path))
+
+
 class TestModelManagerParsing:
     """Tests for model ID parsing."""
 
@@ -92,18 +98,43 @@ class TestModelManagerStatus:
         assert status.size_bytes is None
 
     def test_get_model_status_downloaded(self, manager, tmp_path):
-        """Status is downloaded when model in cache."""
+        """Status is downloaded only when cache exists and validation succeeded."""
         # Create a fake cache directory
         fake_cache = tmp_path / "model"
         fake_cache.mkdir()
         (fake_cache / "model.bin").write_bytes(b"x" * 1000)
+        fingerprint = {"commit_hash": "abc123", "size_on_disk": 1000, "nb_files": 1}
 
-        with patch.object(manager, "get_model_cache_path", return_value=fake_cache):
+        with patch.object(manager, "get_model_cache_path", return_value=fake_cache), patch.object(
+            manager, "_get_model_cache_fingerprint", return_value=fingerprint
+        ), patch.object(
+            manager,
+            "_get_validation_state",
+            return_value={
+                "state": manager.VALIDATION_STATE_WORKING,
+                "cache_fingerprint": fingerprint,
+                "error": None,
+            },
+        ):
             status = manager.get_model_status("mlx-community/whisper-tiny-mlx")
 
         assert status.status == "downloaded"
         assert status.path == str(fake_cache)
         assert status.size_bytes == 1000
+
+    def test_get_model_status_error_when_not_validated(self, manager, tmp_path):
+        """Status is error when cache exists but there is no working validation state."""
+        fake_cache = tmp_path / "model"
+        fake_cache.mkdir()
+        (fake_cache / "model.bin").write_bytes(b"x" * 1000)
+
+        with patch.object(manager, "get_model_cache_path", return_value=fake_cache), patch.object(
+            manager, "_get_model_cache_fingerprint", return_value={"commit_hash": "abc"}
+        ), patch.object(manager, "_get_validation_state", return_value=None):
+            status = manager.get_model_status("mlx-community/whisper-tiny-mlx")
+
+        assert status.status == "error"
+        assert status.error is not None
 
     def test_get_model_status_downloading(self, manager):
         """Status is downloading when download in progress."""
@@ -253,12 +284,14 @@ class TestModelManagerDownload:
 
     def test_download_model_already_downloaded(self, manager, tmp_path):
         """Download raises if model already downloaded."""
-        # Create a fake cache directory
-        fake_cache = tmp_path / "model"
-        fake_cache.mkdir()
-        (fake_cache / "model.bin").write_bytes(b"x" * 100)
-
-        with patch.object(manager, "get_model_cache_path", return_value=fake_cache):
+        with patch.object(
+            manager,
+            "get_model_status",
+            return_value=ModelStatus(
+                id="mlx-community/whisper-tiny-mlx",
+                status="downloaded",
+            ),
+        ):
             with pytest.raises(ModelAlreadyDownloadedError) as exc_info:
                 manager.download_model("mlx-community/whisper-tiny-mlx")
 
@@ -266,15 +299,16 @@ class TestModelManagerDownload:
 
     def test_download_model_success(self, manager):
         """Download completes successfully and clears progress."""
-        with patch.object(manager, "get_model_cache_path", return_value=None):
-            with patch(
-                "app.services.model_manager.snapshot_download"
-            ) as mock_download:
+        with patch.object(manager, "get_model_cache_path", return_value=None), patch.object(
+            manager, "validate_downloaded_model"
+        ) as mock_validate:
+            with patch("app.services.model_manager.snapshot_download") as mock_download:
                 manager.download_model("mlx-community/whisper-tiny-mlx")
 
                 mock_download.assert_called_once()
                 call_kwargs = mock_download.call_args.kwargs
                 assert call_kwargs["repo_id"] == "mlx-community/whisper-tiny-mlx"
+                mock_validate.assert_called_once_with("mlx-community/whisper-tiny-mlx")
 
         # Progress should be cleared after successful download
         assert "mlx-community/whisper-tiny-mlx" not in manager._download_progress
@@ -344,9 +378,9 @@ class TestModelManagerAsyncDownload:
     def test_start_download_async_starts_thread(self, manager):
         """Async download starts a background thread."""
         with patch.object(manager, "get_model_cache_path", return_value=None):
-            with patch(
-                "app.services.model_manager.snapshot_download"
-            ) as mock_download:
+            with patch("app.services.model_manager.snapshot_download") as mock_download, patch.object(
+                manager, "validate_downloaded_model"
+            ):
                 # Make the mock block briefly to ensure thread starts
                 mock_download.side_effect = lambda **kwargs: time.sleep(0.1)
 

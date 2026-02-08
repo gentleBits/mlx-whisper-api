@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import patch
 
 from app.config import SUPPORTED_MODELS
+from app.services.model_manager import ModelStatus
 
 
 class TestListModels:
@@ -22,7 +23,7 @@ class TestListModels:
         model_ids = [m["id"] for m in data["models"]]
         assert len(model_ids) == len(SUPPORTED_MODELS)
 
-        valid_statuses = {"downloaded", "not_downloaded", "downloading"}
+        valid_statuses = {"downloaded", "not_downloaded", "downloading", "error"}
         for model in data["models"]:
             assert "id" in model
             assert "name" in model
@@ -43,7 +44,7 @@ class TestModelStatus:
         assert "id" in data
         assert "status" in data
         assert data["id"] == "mlx-community/whisper-tiny-mlx"
-        assert data["status"] in {"downloaded", "not_downloaded", "downloading"}
+        assert data["status"] in {"downloaded", "not_downloaded", "downloading", "error"}
 
     def test_model_status_invalid_id(self, client):
         """Returns 404 for unknown model ID."""
@@ -96,14 +97,13 @@ class TestModelDownload:
 
     def test_download_model_already_downloaded(self, client, tmp_path):
         """Returns 409 if model is already downloaded."""
-        fake_cache = tmp_path / "model"
-        fake_cache.mkdir()
-        (fake_cache / "model.bin").write_bytes(b"x" * 100)
-
         with patch(
-            "app.services.model_manager.ModelManager.get_model_cache_path"
-        ) as mock_cache:
-            mock_cache.return_value = fake_cache
+            "app.services.model_manager.ModelManager.get_model_status"
+        ) as mock_status:
+            mock_status.return_value = ModelStatus(
+                id="mlx-community/whisper-tiny-mlx",
+                status="downloaded",
+            )
 
             response = client.post("/models/mlx-community/whisper-tiny-mlx/download")
 

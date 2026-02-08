@@ -4,11 +4,23 @@ import pytest
 from unittest.mock import patch
 from io import BytesIO
 
-from app.config import SUPPORTED_MODELS
+from app.config import DEFAULT_MODEL, SUPPORTED_MODELS
+from app.services.model_manager import ModelStatus
 
 
 class TestTranscribeEndpoint:
     """Tests for POST /transcribe endpoint."""
+
+    @pytest.fixture(autouse=True)
+    def mock_model_ready(self):
+        """Pretend supported models are validated and ready by default."""
+        with patch("app.routers.transcribe.get_model_manager") as mock_get_manager:
+            manager = mock_get_manager.return_value
+            manager.get_model_status.side_effect = lambda model_id: ModelStatus(
+                id=model_id,
+                status="downloaded",
+            )
+            yield manager
 
     @pytest.fixture
     def mock_mlx_whisper(self):
@@ -110,6 +122,39 @@ class TestTranscribeEndpoint:
         # Verify model is from supported list and default is used
         assert data["model"] in SUPPORTED_MODELS
         assert data["model"] == DEFAULT_MODEL
+
+    def test_transcribe_rejects_not_downloaded_model(self, client):
+        """Returns MODEL_NOT_DOWNLOADED when model is not ready."""
+        with patch("app.routers.transcribe.get_model_manager") as mock_get_manager:
+            mock_get_manager.return_value.get_model_status.return_value = ModelStatus(
+                id=DEFAULT_MODEL,
+                status="not_downloaded",
+            )
+            response = client.post(
+                "/transcribe",
+                files={"file": ("test.wav", BytesIO(b"fake audio"), "audio/wav")},
+            )
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["code"] == "MODEL_NOT_DOWNLOADED"
+
+    def test_transcribe_rejects_error_model(self, client):
+        """Returns MODEL_DOWNLOAD_FAILED when model validation failed."""
+        with patch("app.routers.transcribe.get_model_manager") as mock_get_manager:
+            mock_get_manager.return_value.get_model_status.return_value = ModelStatus(
+                id=DEFAULT_MODEL,
+                status="error",
+                error="Validation failed: missing weights.npz",
+            )
+            response = client.post(
+                "/transcribe",
+                files={"file": ("test.wav", BytesIO(b"fake audio"), "audio/wav")},
+            )
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["code"] == "MODEL_DOWNLOAD_FAILED"
 
 
 class TestTranscribeWithRealModel:

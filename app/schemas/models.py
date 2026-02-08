@@ -106,6 +106,11 @@ class ModelInfo(BaseModel):
         le=1.0,
         examples=[0.45]
     )
+    error: Optional[str] = Field(
+        default=None,
+        description="Error message when status is 'error'",
+        examples=["Model found in cache but not validated. Re-run download to validate it."]
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -118,7 +123,8 @@ class ModelInfo(BaseModel):
                     "english_only": False,
                     "status": "downloaded",
                     "size_bytes": 3100000000,
-                    "download_progress": None
+                    "download_progress": None,
+                    "error": None
                 }
             ]
         }
@@ -145,7 +151,8 @@ class ModelListResponse(BaseModel):
                             "english_only": False,
                             "status": "not_downloaded",
                             "size_bytes": None,
-                            "download_progress": None
+                            "download_progress": None,
+                            "error": None
                         },
                         {
                             "id": "mlx-community/whisper-large-v3-mlx",
@@ -155,7 +162,8 @@ class ModelListResponse(BaseModel):
                             "english_only": False,
                             "status": "downloaded",
                             "size_bytes": 3100000000,
-                            "download_progress": None
+                            "download_progress": None,
+                            "error": None
                         }
                     ]
                 }

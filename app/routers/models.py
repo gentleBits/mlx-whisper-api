@@ -93,7 +93,7 @@ Returns:
 - **downloaded**: Model is available locally with path and size
 - **not_downloaded**: Model needs to be downloaded
 - **downloading**: Model download in progress with progress info
-- **error**: Download failed with error message
+- **error**: Model exists but is not currently usable (validation failed or stale)
 """,
     responses={
         200: {
@@ -162,6 +162,7 @@ async def get_model_status(
             progress=status.progress,
             downloaded_bytes=status.downloaded_bytes,
             total_bytes=status.total_bytes,
+            error=status.error,
         )
     except ModelNotFoundError as e:
         logger.warning(

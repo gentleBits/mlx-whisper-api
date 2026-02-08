@@ -8,24 +8,21 @@ from typing import Optional
 
 from fastapi import APIRouter, File, Form, UploadFile, Request
 
-from app.config import DEFAULT_MODEL, MAX_AUDIO_SIZE_MB
+from app.config import DEFAULT_MODEL, MAX_AUDIO_SIZE_MB, SUPPORTED_MODELS
 from app.schemas.models import TranscriptionResponse, ErrorResponse
 from app.errors import (
-    APIException,
-    ErrorCode,
     EmptyFileError,
     FileTooLargeError,
+    ModelDownloadFailedError as APIModelDownloadFailedError,
     ModelNotDownloadedError as APIModelNotDownloadedError,
     ModelUnsupportedError,
     TranscriptionFailedError,
-    UnsupportedFormatError,
 )
 from app.validation import (
     validate_language,
     validate_prompt,
     validate_audio_format,
     sanitize_filename,
-    SUPPORTED_AUDIO_FORMATS,
     MAX_PROMPT_LENGTH,
 )
 from app.services.transcription import (
@@ -34,6 +31,7 @@ from app.services.transcription import (
     ModelNotDownloadedError,
     UnsupportedModelError,
 )
+from app.services.model_manager import get_model_manager
 
 logger = logging.getLogger(__name__)
 
@@ -207,6 +205,25 @@ async def transcribe_audio(
     # Check for empty file
     if len(content) == 0:
         raise EmptyFileError()
+
+    # Require explicit model validation before transcription.
+    selected_model = model or DEFAULT_MODEL
+    if selected_model in SUPPORTED_MODELS:
+        manager = get_model_manager()
+        model_status = manager.get_model_status(selected_model)
+        encoded_model_id = selected_model.replace("/", "%2F")
+        download_url = f"/models/{encoded_model_id}/download"
+
+        if model_status.status == "not_downloaded":
+            raise APIModelNotDownloadedError(selected_model, download_url=download_url)
+        if model_status.status == "downloading":
+            raise APIModelNotDownloadedError(selected_model, download_url=download_url)
+        if model_status.status == "error":
+            raise APIModelDownloadFailedError(
+                selected_model,
+                reason=model_status.error,
+                download_url=download_url,
+            )
 
     logger.info(
         "Transcribing audio: filename=%s, size=%d bytes, model=%s, language=%s (request_id=%s)",

@@ -232,6 +232,32 @@ class ModelUnsupportedError(APIException):
         )
 
 
+class ModelDownloadFailedError(APIException):
+    """Exception when a model is present but fails validation/loading."""
+
+    def __init__(
+        self,
+        model_id: str,
+        reason: Optional[str] = None,
+        download_url: Optional[str] = None,
+    ):
+        details: dict[str, Any] = {"model": model_id}
+        if reason:
+            details["reason"] = reason
+        if download_url:
+            details["download_url"] = download_url
+        message = f"Model is not ready for transcription: {model_id}"
+        if reason:
+            message = f"{message}. {reason}"
+
+        super().__init__(
+            message=message,
+            code=ErrorCode.MODEL_DOWNLOAD_FAILED,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            details=details,
+        )
+
+
 class TranscriptionFailedError(APIException):
     """Exception when transcription fails."""
 

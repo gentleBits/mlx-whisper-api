@@ -139,7 +139,7 @@ curl -X POST http://localhost:1738/transcribe \
 
 ### List Models
 
-List all supported models and their download status.
+List all supported models and their readiness status.
 
 ```bash
 curl http://localhost:1738/models
@@ -157,7 +157,8 @@ Response:
       "english_only": false,
       "status": "downloaded",
       "size_bytes": 3100000000,
-      "download_progress": null
+      "download_progress": null,
+      "error": null
     },
     {
       "id": "mlx-community/whisper-tiny-mlx",
@@ -167,11 +168,18 @@ Response:
       "english_only": false,
       "status": "not_downloaded",
       "size_bytes": null,
-      "download_progress": null
+      "download_progress": null,
+      "error": null
     }
   ]
 }
 ```
+
+Status meanings:
+- `downloaded`: model is cached and validated as loadable.
+- `not_downloaded`: model is not cached.
+- `downloading`: model download/validation is in progress.
+- `error`: model cache exists but it is not usable yet (for example partial or failed validation).
 
 ### Model Status
 
@@ -187,7 +195,8 @@ Response (downloaded):
   "id": "mlx-community/whisper-large-v3-mlx",
   "status": "downloaded",
   "path": "/Users/.../.cache/huggingface/hub/models--mlx-community--whisper-large-v3-mlx",
-  "size_bytes": 3100000000
+  "size_bytes": 3100000000,
+  "error": null
 }
 ```
 
