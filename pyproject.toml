@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mlx-whisper-api"
-version = "0.1.0"
+version = "0.3.1"
 description = "REST API for audio-to-text transcription using MLX-optimized Whisper models on Apple Silicon"
 authors = ["Cosmin U."]
 readme = "README.md"

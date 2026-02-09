@@ -58,7 +58,7 @@ Currently, this API does not require authentication. For production deployments,
 consider adding authentication middleware.
 """
 
-API_VERSION = "0.3.0"
+API_VERSION = "0.3.1"
 
 OPENAPI_TAGS = [
     {
