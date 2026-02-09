@@ -268,7 +268,7 @@ Environment variables are used as defaults when CLI arguments are not provided.
 | `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
 | `DEFAULT_MODEL` | `mlx-community/whisper-large-v3-mlx` | Default model for transcription |
 | `MAX_AUDIO_SIZE_MB` | `100` | Maximum upload file size in MB |
-| `HUGGINGFACE_CACHE` | `~/.cache/huggingface` | HuggingFace cache directory |
+| `HUGGINGFACE_CACHE` | `~/.cache/huggingface` | HuggingFace cache root (model repos are stored in `<root>/hub`) |
 
 ## Examples
 

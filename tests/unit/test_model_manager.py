@@ -55,6 +55,27 @@ class TestModelManagerParsing:
         assert meta.english_only is False
 
 
+class TestModelManagerCachePaths:
+    """Tests for cache path normalization."""
+
+    def test_hub_cache_path_normalized_from_root(self):
+        """Configured root cache path resolves to root/hub for model repos."""
+        manager = ModelManager()
+
+        assert manager._hf_hub_cache_path.name == "hub"
+        assert manager._hf_hub_cache_path.parent == manager._hf_cache_root_path
+
+    def test_hub_cache_path_keeps_explicit_hub(self, tmp_path, monkeypatch):
+        """Configured hub path stays unchanged and root resolves to parent."""
+        hub_path = tmp_path / "custom" / "hub"
+        monkeypatch.setattr("app.services.model_manager.HUGGINGFACE_CACHE", str(hub_path))
+
+        manager = ModelManager()
+
+        assert manager._hf_hub_cache_path == hub_path
+        assert manager._hf_cache_root_path == hub_path.parent
+
+
 class TestModelManagerValidation:
     """Tests for model validation."""
 
@@ -308,6 +329,7 @@ class TestModelManagerDownload:
                 mock_download.assert_called_once()
                 call_kwargs = mock_download.call_args.kwargs
                 assert call_kwargs["repo_id"] == "mlx-community/whisper-tiny-mlx"
+                assert call_kwargs["cache_dir"] == str(manager._hf_hub_cache_path)
                 mock_validate.assert_called_once_with("mlx-community/whisper-tiny-mlx")
 
         # Progress should be cleared after successful download

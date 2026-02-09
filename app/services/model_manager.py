@@ -94,8 +94,16 @@ class ModelManager:
         """Initialize the model manager."""
         self._download_progress: dict[str, dict] = {}
         self._state_lock = threading.Lock()
+        configured_cache = Path(HUGGINGFACE_CACHE).expanduser()
+        if configured_cache.name == "hub":
+            # Backward-compatible: allow explicit hub path in env config.
+            self._hf_hub_cache_path = configured_cache
+            self._hf_cache_root_path = configured_cache.parent
+        else:
+            self._hf_cache_root_path = configured_cache
+            self._hf_hub_cache_path = configured_cache / "hub"
         self._validation_state_file = (
-            Path(HUGGINGFACE_CACHE)
+            self._hf_cache_root_path
             / "mlx_whisper_api"
             / "model_validation_state.json"
         )
@@ -160,7 +168,7 @@ class ModelManager:
     def _get_repo_cache_info(self, model_id: str) -> Any:
         """Get cached HuggingFace repo metadata for a model."""
         try:
-            cache_info = scan_cache_dir(HUGGINGFACE_CACHE)
+            cache_info = scan_cache_dir(str(self._hf_hub_cache_path))
             for repo in cache_info.repos:
                 if repo.repo_id == model_id:
                     return repo
@@ -552,7 +560,7 @@ class ModelManager:
             # Download the model using snapshot_download
             snapshot_download(
                 repo_id=model_id,
-                cache_dir=HUGGINGFACE_CACHE,
+                cache_dir=str(self._hf_hub_cache_path),
             )
             self.validate_downloaded_model(model_id)
             self.clear_download_progress(model_id)
@@ -607,7 +615,7 @@ class ModelManager:
         try:
             snapshot_download(
                 repo_id=model_id,
-                cache_dir=HUGGINGFACE_CACHE,
+                cache_dir=str(self._hf_hub_cache_path),
             )
             self.validate_downloaded_model(model_id)
             # Download complete - clear progress tracking
@@ -656,7 +664,7 @@ class ModelManager:
         # Also try to clean up the HuggingFace cache metadata
         try:
             # The refs directory stores branch/tag references
-            cache_base = Path(HUGGINGFACE_CACHE) / "hub"
+            cache_base = self._hf_hub_cache_path
             model_dir_name = f"models--{model_id.replace('/', '--')}"
             refs_path = cache_base / model_dir_name
             if refs_path.exists() and refs_path != cache_path:
